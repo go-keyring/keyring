@@ -12,7 +12,17 @@ import (
 // (purego) github.com/go-macos/keychain binding. Its typed errors are
 // translated to keyring's sentinels.
 func init() {
-	backendSet = func(service, account string, secret []byte) error {
+	backendSet = func(service, account string, secret []byte, cfg config) error {
+		if cfg.userPresence {
+			// Map the platform-neutral user-presence request onto the
+			// Keychain's SecAccessControl: kSecAccessControlUserPresence plus
+			// the this-device-only accessibility class, gating every read
+			// behind Touch ID or the device passcode. keychain's error (a
+			// *keychain.Error carrying the raw OSStatus) is returned verbatim,
+			// so a caller can still tell an entitlement failure from a wiring
+			// fault.
+			return keychain.Set(service, account, secret, keychain.WithAccessControl(keychain.UserPresence))
+		}
 		return keychain.Set(service, account, secret)
 	}
 	backendGet = func(service, account string) ([]byte, error) {

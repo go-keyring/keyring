@@ -33,6 +33,24 @@ err = keyring.Delete("my-app", "alice@example.com")
 ok := keyring.Available()
 ```
 
+### User-presence gate
+
+A write may request that later reads be authorised by the person at the keyboard:
+
+```go
+err := keyring.Set("my-app", "alice@example.com", []byte(secret), keyring.WithUserPresence())
+```
+
+Its reach is platform-dependent:
+
+| GOOS | `WithUserPresence` |
+| --- | --- |
+| darwin | the item is written with a `SecAccessControl` (`kSecAccessControlUserPresence` + `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`): it never leaves the device and every read raises the Touch ID / passcode prompt |
+| windows, linux | best-effort: the Credential Manager and Secret Service expose no per-item presence flag through their pure-Go clients, so the option is accepted and ignored — the secret is still stored with the store's at-rest protection (DPAPI; the collection's encryption). Add an interactive gate (e.g. Windows Hello) at the application layer if needed |
+
+The option never changes whether the write succeeds; it only strengthens the
+stored item's protection where the platform supports it.
+
 Errors are typed and comparable with `errors.Is`:
 
 | Error | Meaning |
