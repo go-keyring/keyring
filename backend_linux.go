@@ -28,7 +28,11 @@ func mapErr(err error) error {
 // …), reached through the pure-Go (godbus) github.com/go-freedesktop/secretservice
 // client.
 func init() {
-	backendSet = func(service, account string, secret []byte) error {
+	// cfg is accepted but not acted on: the freedesktop Secret Service exposes
+	// no per-item user-presence flag through this client, so WithUserPresence
+	// is a best-effort no-op here (see its doc). The secret is still stored
+	// under the collection's own encryption.
+	backendSet = func(service, account string, secret []byte, _ config) error {
 		return mapErr(secretservice.Set(service, account, secret))
 	}
 	backendGet = func(service, account string) ([]byte, error) {

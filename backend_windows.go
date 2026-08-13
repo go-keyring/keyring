@@ -15,7 +15,11 @@ func target(service, account string) string { return service + "/" + account }
 // On Windows the store is the Credential Manager, reached through the pure-Go
 // (x/sys/windows) github.com/danieljoos/wincred binding.
 func init() {
-	backendSet = func(service, account string, secret []byte) error {
+	// cfg is accepted but not acted on: the Credential Manager exposes no
+	// per-item user-presence flag through wincred, so WithUserPresence is a
+	// best-effort no-op here (see its doc). The credential is still stored with
+	// the account's DPAPI at-rest protection.
+	backendSet = func(service, account string, secret []byte, _ config) error {
 		cred := wincred.NewGenericCredential(target(service, account))
 		cred.UserName = account
 		cred.CredentialBlob = secret
