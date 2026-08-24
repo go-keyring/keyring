@@ -62,17 +62,19 @@ type Option func(*config)
 //     kSecAccessControlUserPresence and the accessibility class
 //     kSecAttrAccessibleWhenUnlockedThisDeviceOnly — it never leaves this
 //     device, and every read raises the system Touch ID / passcode prompt.
-//   - windows, linux: best-effort. The Credential Manager and the freedesktop
-//     Secret Service expose no per-item presence flag through their pure-Go
-//     clients, so the option is accepted and ignored — the secret is still
-//     stored with the store's own at-rest protection (DPAPI under the
-//     Credential Manager; the collection's encryption under the Secret
-//     Service). An application that needs an interactive gate on these
-//     platforms adds it at its own layer (for example a Windows Hello consent
-//     prompt) around the read.
+//   - windows, linux: the Credential Manager and the freedesktop Secret Service
+//     expose no per-item presence flag through their pure-Go clients, so the
+//     write stores the secret with the store's own at-rest protection (DPAPI
+//     under the Credential Manager; the collection's encryption under the Secret
+//     Service) and the interactive gate is enforced on the READ instead: a
+//     [Get] passed [WithUserPresence] runs the backend's [presenceVerify] (a
+//     Windows Hello / desktop-agent prompt) before returning the secret. Until a
+//     backend installs a real verifier the check defaults to a no-op, so the
+//     option is a harmless pass-through there.
 //
 // The option never changes whether the write succeeds; it only strengthens the
-// protection of the stored item where the platform supports it.
+// protection of the stored item, at write time on darwin and at read time
+// elsewhere.
 func WithUserPresence() Option {
 	return func(c *config) { c.userPresence = true }
 }
@@ -86,6 +88,16 @@ var (
 	backendDelete    func(service, account string) error
 	backendAvailable func() bool
 )
+
+// presenceVerify raises the platform's interactive user-presence check and
+// returns nil only when the person at the keyboard authorises it (an error, e.g.
+// a cancelled prompt, denies the read). It is consulted by [Get] when the caller
+// passes [WithUserPresence] on a platform whose vault does not enforce presence
+// itself. The default is a no-op: on darwin the macOS Keychain raises Touch ID
+// from the item's own SecAccessControl during the read, so no façade-level check
+// is needed; the windows and linux backends replace this in their init() with a
+// Windows Hello / desktop-agent prompt.
+var presenceVerify = func() error { return nil }
 
 // Set stores secret under (service, account), replacing any existing value.
 // It returns [ErrUnavailable] when no secret store is usable on this host.
@@ -102,7 +114,24 @@ func Set(service, account string, secret []byte, opts ...Option) error {
 // Get returns the secret stored under (service, account). It returns
 // [ErrNotFound] when no such secret exists and [ErrUnavailable] when no store
 // is usable.
-func Get(service, account string) ([]byte, error) {
+//
+// Pass [WithUserPresence] to require an interactive user-presence check before
+// the secret is returned — the read half of a secret written with the same
+// option. On darwin the check is the macOS Keychain's own Touch ID prompt,
+// raised from the item's SecAccessControl during retrieval; on windows and linux
+// it is a façade-level prompt (Windows Hello / the desktop authentication agent).
+// A denied or cancelled check fails the read, and the secret is not retrieved.
+// Without the option Get never prompts.
+func Get(service, account string, opts ...Option) ([]byte, error) {
+	var c config
+	for _, o := range opts {
+		o(&c)
+	}
+	if c.userPresence {
+		if err := presenceVerify(); err != nil {
+			return nil, err
+		}
+	}
 	return backendGet(service, account)
 }
 
