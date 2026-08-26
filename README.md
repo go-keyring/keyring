@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/go-keyring/keyring/actions/workflows/ci.yml/badge.svg)](https://github.com/go-keyring/keyring/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-keyring/keyring.svg)](https://pkg.go.dev/github.com/go-keyring/keyring)
-[![Go Report Card](https://goreportcard.com/badge/github.com/go-keyring/keyring)](https://goreportcard.com/report/github.com/go-keyring/keyring)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](LICENSE)
 
 Pure-Go (`CGO_ENABLED=0`) cross-platform secret store: one small API — `Set` /
