@@ -15,7 +15,7 @@ jobs:
     name: darwin (real Keychain round-trip, CGO=0)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
@@ -34,7 +34,7 @@ jobs:
     name: windows (real Credential Manager round-trip)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
@@ -47,7 +47,7 @@ jobs:
     name: linux (unit, CGO=0, core 100%)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
@@ -64,7 +64,7 @@ jobs:
     name: linux (live Secret Service round-trip)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
@@ -104,7 +104,7 @@ jobs:
           - { goos: linux, goarch: loong64 }
           - { goos: linux, goarch: s390x }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26.4'
