@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.4'
+          go-version: '1.27.1'
       - name: Vet
         run: CGO_ENABLED=0 go vet ./...
       - name: gofmt
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.4'
+          go-version: '1.27.1'
       - name: Test (real Credential Manager + core)
         run: go test -count=1 ./...
         env:
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.4'
+          go-version: '1.27.1'
       - name: Vet
         run: CGO_ENABLED=0 go vet ./...
       - name: Test (unit, no daemon)
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.4'
+          go-version: '1.27.1'
       - name: Install GNOME Keyring
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gnome-keyring libsecret-tools dbus-x11
       - name: Live round-trip vs gnome-keyring-daemon
@@ -107,7 +107,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.4'
+          go-version: '1.27.1'
       - name: Cross-compile (CGO=0)
         run: go build ./...
         env:
